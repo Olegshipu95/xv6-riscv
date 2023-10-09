@@ -32,7 +32,10 @@ entry("link");
 entry("mkdir");
 entry("chdir");
 entry("dup");
+entry("dump");
+entry("dump2");
 entry("getpid");
 entry("sbrk");
 entry("sleep");
 entry("uptime");
+entry("procinfo")
