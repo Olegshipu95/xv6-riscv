@@ -162,6 +162,7 @@ UPROGS=\
     $U/_dump2tests\
     $U/_ps\
     $U/_alloctest\
+    $U/_alloctest2\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
