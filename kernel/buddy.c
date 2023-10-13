@@ -244,12 +244,12 @@ int bd_initfree_pair(int k, int bi, enum right_or_left flag) {
         // one of the pair is free
         free = BLK_SIZE(k);
         if(flag == left_flag){
-            if(bi % 2 == 0)buddy = ++bi;
-            else buddy = bi;
+            if(bi % 2 == 0)++bi;
+            buddy = bi;
         }
         else{
-            if(bi % 2 == 1)buddy = --bi;
-            else buddy = bi;
+            if(bi % 2 == 1)--bi;
+            buddy = bi;
         }
         lst_push(&bd_sizes[k].free, addr(k, buddy));  // put buddy on free list
     }
