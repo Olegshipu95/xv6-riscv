@@ -5,7 +5,6 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
-#include "ps.h"
 
 uint64
 sys_exit(void) {
@@ -83,56 +82,20 @@ sys_uptime(void) {
     return xticks;
 }
 
-uint64 sys_dump(void) {
+uint64
+sys_dump(void) {
     dump();
     return 0;
 }
 
-uint64 sys_dump2(void) {
+uint64
+sys_dump2(void) {
     int pid;
-    int register_number;
+    int register_num;
     uint64 return_value;
-    argint(0, &pid);
-    argint(1, &register_number);
-    argaddr(2, &return_value);
-    int x = dump2(pid, register_number, return_value);
-    return x;
-}
 
-uint64 sys_procinfo(void) {
-    int argc;
-//    uint64 argv;
-    int flag;
-//    char *pptr;
-    argint(0, &argc);
-    argint(1, &flag);
-//    argaddr(1, &argv);
-//    argstr(1, pptr, 2);
-    if (argc == 1) {
-        terminal_proc_info();
-        return 0;
-    } else if (argc == 2) {
-        if(flag == x){
-            all_proc_info();
-            return 0;
-        }
-        else if(flag == a){
-            terminal_proc_info();
-            return 0;
-        }
-        else {
-            return 1;
-        }
-//        if(pptr[0]!='x'){
-//            return 1;
-//        }
-//        copyin(mycpu()->proc->pagetable, pptr, argv, sizeof(uint64));
-//        uint64 value;
-//        memcpy(&value, pptr, sizeof(value));
-//        copyin(mycpu()->proc->pagetable, pptr, value, sizeof(char));
-//        printf("%c", pptr[0]);
-    } else {
-        return 2;
-    }
-    return 0;
+    argint(0, &pid);
+    argint(1, &register_num);
+    argaddr(2, &return_value);
+    return dump2(pid, register_num, return_value);
 }

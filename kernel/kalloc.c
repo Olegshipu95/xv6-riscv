@@ -8,12 +8,12 @@
 #include "spinlock.h"
 #include "riscv.h"
 #include "defs.h"
-#include "buddy.h"
+
 extern char end[];  // first address after kernel.
 // defined by kernel.ld.
 void kinit() {
-    char *p = (char *)PGROUNDUP((uint64)end);
-    bd_init(p, (void *)PHYSTOP);
+    char *p = (char *) PGROUNDUP((uint64) end);
+    bd_init(p, (void *) PHYSTOP);
 }
 
 // Free the page of physical memory pointed at by v,

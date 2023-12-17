@@ -12,7 +12,6 @@
 #include "file.h"
 #include "stat.h"
 #include "proc.h"
-#include "buddy.h"
 
 struct devsw devsw[NDEV];
 struct {
@@ -28,15 +27,10 @@ fileinit(void) {
 struct file *
 filealloc(void) {
     struct file *f;
-    acquire(&ftable.lock);
+
     f = (struct file *) bd_malloc(sizeof(struct file));
-    if(f==0){
-        release(&ftable.lock);
-        return 0;
-    }
-    else{
-        f->ref++;
-        release(&ftable.lock);
+    if (f) {
+        f->ref = 1;
     }
     return f;
 }
@@ -62,8 +56,8 @@ fileclose(struct file *f) {
         release(&ftable.lock);
         return;
     }
-    f->ref = 0;
     release(&ftable.lock);
+
     if (f->type == FD_PIPE) {
         pipeclose(f->pipe, f->writable);
     } else if (f->type == FD_INODE || f->type == FD_DEVICE) {

@@ -9,26 +9,6 @@ void test3();
 void test4();
 #endif
 
-int main(void) {
-  printf("dump tests started\n");
-#ifndef SYS_dump
-  printf("no dump syscall found. Stop testing\n");
-  goto no_dump;
-#endif
-#ifdef SYS_dump
-  printf("dump syscall found. Start testing\n");
-  test1();
-  test2();
-  test3();
-  test4();
-  printf("4 tests were ran\n");
-#endif
-#ifndef SYS_dump
-no_dump:
-#endif
-  exit(0);
-}
-
 #ifdef SYS_dump
 
 void test1() {
@@ -40,7 +20,7 @@ void test1() {
   dump();
 }
 
-int dump_test2_asm();
+extern int dump_test2_asm();
 
 void test2() {
   printf("#####################\n");
@@ -118,3 +98,23 @@ void test4() {
   dump_test4_asm();
 }
 #endif
+
+int main(void) {
+    printf("dump tests started\n");
+#ifndef SYS_dump
+    printf("no dump syscall found. Stop testing\n");
+    goto no_dump;
+#endif
+#ifdef SYS_dump
+    printf("dump syscall found. Start testing\n");
+    test1();
+    test2();
+    test3();
+    test4();
+    printf("4 tests were ran\n");
+#endif
+#ifndef SYS_dump
+    no_dump:
+#endif
+    exit(0);
+}

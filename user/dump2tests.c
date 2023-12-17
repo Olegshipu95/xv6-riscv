@@ -12,24 +12,24 @@ void test4();
 #endif
 
 int main(void) {
-  printf("dump2 tests started\n");
+    printf("dump2 tests started\n");
 #ifndef SYS_dump2
-  printf("no dump2 syscall found. Stop testing\n");
-  goto no_dump2;
+    printf("no dump2 syscall found. Stop testing\n");
+    goto no_dump2;
 #endif
 #ifdef SYS_dump2
-  printf("dump2 syscall found. Start testing\n");
-  success = 0;
-  test1();
-  test2();
-  test3();
-  test4();
-  printf("4 tests were run. %d tests passed\n", success);
+    printf("dump2 syscall found. Start testing\n");
+    success = 0;
+    test1();
+    test2();
+    test3();
+    test4();
+    printf("4 tests were run. %d tests passed\n", success);
 #endif
 #ifndef SYS_dump2
-no_dump2:
+    no_dump2:
 #endif
-  exit(0);
+    exit(0);
 }
 
 #ifdef SYS_dump2

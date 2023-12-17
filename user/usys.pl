@@ -14,7 +14,7 @@ sub entry {
     print " ecall\n";
     print " ret\n";
 }
-	
+
 entry("fork");
 entry("exit");
 entry("wait");
@@ -32,10 +32,9 @@ entry("link");
 entry("mkdir");
 entry("chdir");
 entry("dup");
-entry("dump");
-entry("dump2");
 entry("getpid");
 entry("sbrk");
 entry("sleep");
 entry("uptime");
-entry("procinfo")
+entry("dump");
+entry("dump2");

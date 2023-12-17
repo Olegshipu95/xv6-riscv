@@ -1,55 +1,44 @@
-//
-// Created by oleg on 14.09.23.
-//
 #include "kernel/types.h"
-#include "kernel/stat.h"
 #include "user/user.h"
 
-int main(void) {
-    const char* PING  = "ping";
-    const char* PONG  = "pong";
-    int ping_fd[2];
-    int pong_fd[2];
-    int ping_size = sizeof(PING);
-    int pong_size = sizeof(PONG);
-    if (pipe(ping_fd) == -1) {
-        fprintf(1, "error with pipe", 15);
-        exit(1);
-    }
-    if (pipe(pong_fd) == -1) {
-        fprintf(1, "error with pipe", 15);
-        exit(1);
-    }
-    if (fork() == 0) {
-        char readBuffer[ping_size];
-        int pid = getpid();
-        close(ping_fd[1]);
-        close(pong_fd[0]);
+#define PING "ping"
+#define PONG "pong"
 
-        if (read(ping_fd[0], readBuffer, ping_size) != ping_size){
-            fprintf(1, "error with read ping");
-            exit(1);
-        }
-        fprintf(0, "pid %d: got %s \n", pid, readBuffer);
-        close(ping_fd[0]);
+void
+main() {
+    int p1[2];
+    int p2[2];
 
-        write(pong_fd[1], PONG, pong_size);
-        close(pong_fd[1]);
+    pipe(p1);
+    pipe(p2);
+
+    int pr = fork();
+    int pid = getpid();
+
+    if (pr > 0) {
+        close(p1[0]);
+        write(p1[1], PING, sizeof(PING));
+        close(p1[1]);
+        close(p2[1]);
+        char *buf[sizeof(PONG)];
+        read(p2[0], buf, sizeof(buf));
+        close(p2[0]);
+        fprintf(1, "%d: got %s\n", pid, buf);
+    } else if (pr == 0) {
+        close(p1[1]);
+        char *buf[sizeof(PING)];
+        read(p1[0], buf, sizeof(buf));
+        close(p1[0]);
+        fprintf(1, "%d: got %s\n", pid, buf);
+        close(p2[0]);
+        write(p2[1], PONG, sizeof(PONG));
+        close(p2[1]);
     } else {
-        char readBuffer[pong_size];
-        int pid = getpid();
-        close(ping_fd[0]);
-        close(pong_fd[1]);
-
-        write(ping_fd[1], PING, ping_size);
-        close(ping_fd[1]);
-
-        if(read(pong_fd[0], readBuffer, pong_size)!=pong_size){
-            fprintf(1, "error with read pong");
-            exit(1);
-        }
-        close(pong_fd[0]);
-        fprintf(0, "pid %d: got %s\n", pid, readBuffer);
+        fprintf(2, "Error during fork.");
+        close(p1[0]);
+        close(p1[1]);
+        close(p2[0]);
+        close(p2[1]);
     }
-    return 0;
+    exit(0);
 }
