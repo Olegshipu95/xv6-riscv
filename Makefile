@@ -29,8 +29,6 @@ OBJS = \
   $K/kernelvec.o \
   $K/plic.o \
   $K/virtio_disk.o \
-  $K/buddy.o \
-  $K/list.o
 
 # riscv64-unknown-elf- or riscv64-linux-gnu-
 # perhaps in /opt/riscv/bin
@@ -58,7 +56,8 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
+#CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
+CFLAGS = -Wall -O -fno-omit-frame-pointer -ggdb -gdwarf-2
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
 CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax
@@ -108,28 +107,6 @@ $U/_forktest: $U/forktest.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $U/_forktest $U/forktest.o $U/ulib.o $U/usys.o
 	$(OBJDUMP) -S $U/_forktest > $U/forktest.asm
 
-$U/_dumptests: $U/dumptests.o $U/dumptests.asm.o $(ULIB)
-	$(LD) $(LDFLAGS) -T $U/user.ld -o $@ $^
-	$(OBJDUMP) -S $@ > $*.asm
-	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
-
-$U/dumptests.asm.o: user/dumptests.S
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-$U/dumptests.o: user/dumptests.c
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-$U/_dump2tests: $U/dump2tests.o $U/dump2tests.asm.o $(ULIB)
-	$(LD) $(LDFLAGS) -T $U/user.ld -o $@ $^
-	$(OBJDUMP) -S $@ > $*.asm
-	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
-
-$U/dump2tests.asm.o: user/dump2tests.S
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-$U/dump2tests.o: user/dump2tests.c
-	$(CC) $(CFLAGS) -o $@ -c $<
-
 mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 	gcc -Werror -Wall -I. -o mkfs/mkfs mkfs/mkfs.c
 
@@ -156,14 +133,24 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+	$U/_test\
 	$U/_pingpong\
 	$U/_dumptests\
-	$U/_dump2tests\
-	$U/_alloctest\
-	$U/_alloctest_original\
-	$U/_forktest2\
-	$U/_cowtest\
-	$U/_zerotest
+    $U/_dump2tests\
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+
+$U/_dumptests: $U/dumptests.c $U/dumptests.S $(ULIB)
+	$(CC) $(CFLAGS) -c -o $U/dumptests.S.o $U/dumptests.S
+	$(CC) $(CFLAGS) -c -o $U/dumptests.c.o $U/dumptests.c
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $U/_dumptests $U/dumptests.c.o $U/dumptests.S.o $(ULIB)
+$U/_dump2tests: $U/dump2tests.c $U/dump2tests.S $(ULIB)
+	$(CC) $(CFLAGS) -c -o $U/dump2tests.S.o $U/dump2tests.S
+	$(CC) $(CFLAGS) -c -o $U/dump2tests.c.o $U/dump2tests.c
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $U/_dump2tests $U/dump2tests.c.o $U/dump2tests.S.o $(ULIB)
+
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

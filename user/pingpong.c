@@ -1,46 +1,52 @@
-#include "kernel/types.h"
-#include "user/user.h"
+//
+// Created by asgrim on 20.09.23.
+//
+#include "ulib.h"
 
-const char* parent_message = "Hello from parent";
-const char* child_message = "Hello from child";
+void printErr(const char *char_ptr) {
+    fprintf(2,char_ptr);
+    exit(1);
+}
 
-int main(int argc, char** argv) {
-    int p2c_pipefd[2];
-    int c2p_pipefd[2];
-    
-    if (pipe(p2c_pipefd) < 0 || pipe(c2p_pipefd) < 0) {
-        printf("Failed to initialize pipe\n");
-        exit(1);
+int main() {
+    char buf[256];
+    int p[2];
+    const char *PING_MES = "ping";
+    const char *PONG_MES = "pong";
+    if(pipe(p) == -1) {
+        printErr("error: cannot create pipe");
     }
 
-    int pid = fork();
+    if (write(p[1], PING_MES, strlen(PING_MES)) != strlen(PING_MES)) {
+        printErr("error while writing PING to pipe");
+    }
 
-    if (pid == 0) {
-        close(p2c_pipefd[1]);
-        close(c2p_pipefd[0]);
-        char *buf = malloc(sizeof(char) * 100);
-        int size = 0;
-        for (;read(p2c_pipefd[0], buf + size, 1) > 0;size++);
-        buf[size] = 0;
-        printf("%d: got %s\n", getpid(), buf);
-        close(p2c_pipefd[0]);
-        write(c2p_pipefd[1], child_message, strlen(child_message));
-        close(c2p_pipefd[1]);
+    int st = fork();
+    if (st == -1) {
+        printErr("error: cannot fork process");
+    }
 
-        free(buf);
+    if (st == 0) {
+        if (read(p[0],buf, sizeof(buf)) == -1) {
+            printErr("error while reading from pipe");
+        }
+        printf("%d: got %s \n",getpid(),buf);
+
+        if (write(p[1], PONG_MES, strlen(PONG_MES)) != strlen(PONG_MES)) {
+            printErr("error while writing PONG to pipe");
+        }
+
+        exit(0);
     } else {
-        close(p2c_pipefd[0]);
-        close(c2p_pipefd[1]);
-        write(p2c_pipefd[1], parent_message, strlen(parent_message));
-        close(p2c_pipefd[1]);
-        char *buf = malloc(sizeof(char) * 100);
-        int size = 0;
-        for (;read(c2p_pipefd[0], buf + size, 1) > 0;size++);
-        buf[size] = 0;
-        printf("%d: got %s\n", getpid(), buf);
-        close(c2p_pipefd[0]);
-        free(buf);
+        wait(0);
+
+        if (read(p[0],buf, sizeof(buf)) == -1) {
+            printErr("error while reading from pipe");
+        }
+
+        printf("%d: got %s \n",getpid(),buf);
+
+        exit(0);
     }
 
-    exit(0);
 }

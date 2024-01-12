@@ -3,6 +3,7 @@
 #include "user/user.h"
 
 #ifdef SYS_dump2
+
 int success;
 
 void test1();
