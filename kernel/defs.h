@@ -63,6 +63,8 @@ void            ramdiskrw(struct buf*);
 void*           kalloc(void);
 void            kfree(void *);
 void            kinit(void);
+void            inc_ref(void*);
+void            dec_ref(void*);
 
 // log.c
 void            initlog(int, struct superblock*);
@@ -102,10 +104,13 @@ void            sleep(void*, struct spinlock*);
 void            userinit(void);
 int             wait(uint64);
 void            wakeup(void*);
+void            wakeup_nolock(void*);
 void            yield(void);
 int             either_copyout(int user_dst, uint64 dst, void *src, uint64 len);
 int             either_copyin(void *dst, int user_src, uint64 src, uint64 len);
 void            procdump(void);
+void            dump(void);
+uint64          dump2(int pid, int register_num, uint64 return_addr);
 
 // swtch.S
 void            swtch(struct context*, struct context*);
@@ -173,6 +178,9 @@ uint64          walkaddr(pagetable_t, uint64);
 int             copyout(pagetable_t, uint64, char *, uint64);
 int             copyin(pagetable_t, char *, uint64, uint64);
 int             copyinstr(pagetable_t, char *, uint64, uint64);
+void            vmprint(pagetable_t);
+int             is_cow(pagetable_t, uint64);
+int             cow_copy(pagetable_t, uint64);
 
 // plic.c
 void            plicinit(void);
@@ -184,6 +192,25 @@ void            plic_complete(int);
 void            virtio_disk_init(void);
 void            virtio_disk_rw(struct buf *, int);
 void            virtio_disk_intr(void);
+
+// list.c
+struct list {
+    struct list *prev;
+    struct list *next;
+};
+
+void lst_init(struct list *lst);
+int lst_empty(struct list *lst);
+void lst_remove(struct list *e);
+void* lst_pop(struct list *lst);
+void lst_push(struct list *lst, void *p);
+void lst_print(struct list *lst);
+
+// buddy.c
+void *bd_malloc(uint64 nbytes);
+void bd_free(void *p);
+void bd_init(void *base, void *end);
+void bd_print();
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
