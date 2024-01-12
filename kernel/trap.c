@@ -34,6 +34,27 @@ trapinithart(void)
   w_stvec((uint64)kernelvec);
 }
 
+int lazy(struct proc *p, uint64 va){
+    if (valid_va(p,va) < 0) {
+        return -1;
+    }
+    void *ph_addr = kalloc();
+
+    if (ph_addr == 0) {
+        printf("kek 4\n");
+        return -1;
+    }
+    memset(ph_addr, 0, PGSIZE);
+    int perm = PTE_W | PTE_R | PTE_U ;
+
+    if (mappages(p->pagetable, va, PGSIZE, ph_addr, perm) != 0){
+        kfree(ph_addr);
+        printf("kek 2\n");
+        return -2;
+    }
+    return 0;
+}
+
 //
 // handle an interrupt, exception, or system call from user space.
 // called from trampoline.S
@@ -76,27 +97,28 @@ usertrap(void)
       if (r_scause() == LOAD_PAGE_FAULT || r_scause() == AMO_PAGE_FAULT) {
             uint64 va = r_stval();
             uint64 page_addr = PGROUNDDOWN(va);
-            if (valid_va(p,va) != 0) {
-                goto bad_end;
-            }
-//            if (p->sz <= va) {
-//                 goto bad_end;
-//             }
+//            if (valid_va(p,va) != 0) {
+//                printf("p size = %p",p->sz );
+//                goto bad_end;
+//            }
+          if (p->sz <= va || va < PGROUNDDOWN(p->trapframe->sp)/ 10) {
+              goto bad_end;
+          }
             pte_t *pte;
             uint64 pa;
             pte = walk(p->pagetable,page_addr,0);
             if (pte == 0 || ((*pte & PTE_V) == 0)) {
                 //todo перенаправить на lazy alloc
-                goto bad_end;
+                goto lazy_alloc;
             }
             pa = PTE2PA(*pte);
             uint flags = PTE_FLAGS(*pte);
             if ((flags & PTE_RSW) && (flags & PTE_V) && (flags & PTE_U)) {
-              if (get_ref_count(pa) == 1) {
-                  *pte &= ~PTE_RSW;
-                  *pte |= PTE_W;
-                  goto ok;
-              }
+//              if (get_ref_count(pa) == 1) {
+//                  *pte &= ~PTE_RSW;
+//                  *pte |= PTE_W;
+//                  goto ok;
+//              }
               char *mem = kalloc();
               if (mem == 0) {
                   goto bad_end;
@@ -110,21 +132,34 @@ usertrap(void)
 
               if(mappages(p->pagetable, page_addr, PGSIZE, (uint64)mem, flags) != 0){
                   kfree(mem);
+                  printf("kek 1\n");
                   goto bad_end;
               }
               *pte &= flags;
               *pte |= PA2PTE(mem);
               goto ok;
           }
+          lazy_alloc:
 
+          if (lazy(p,page_addr) < 0) {
+              goto bad_end;
+          } else {
+              goto ok;
+          }
       }
+
+
 
     bad_end:
         printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
         printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
         setkilled(p);
   }
-
+//  if (p->pid == 3) {
+//      printf("test scause\n");
+//      printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
+//      printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
+//  }
   if(killed(p))
     exit(-1);
 
