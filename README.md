@@ -1,0 +1,10 @@
+TASK:
+![image](https://github.com/user-attachments/assets/750c7add-0528-4a24-b57a-378a009292e1)
+![image](https://github.com/user-attachments/assets/d08c7012-a6a9-4424-8ccc-096f847005c2)
+![image](https://github.com/user-attachments/assets/01e4a02a-5603-40ab-b58d-4c2d0ad971af)
+![image](https://github.com/user-attachments/assets/2ac371f7-5184-4a2a-80bb-e9be2b906bf0)
+![image](https://github.com/user-attachments/assets/2a7fb564-6020-4220-82d3-d4559c91df7c)
+![image](https://github.com/user-attachments/assets/2df11514-9b6f-47e8-92b7-fc6294a277c2)
+![image](https://github.com/user-attachments/assets/4dc48338-8d7f-4976-9699-ee91c7c77a92)
+![image](https://github.com/user-attachments/assets/e2bff385-8cfc-451b-b4d6-da1fc19b89ec)
+![image](https://github.com/user-attachments/assets/e0a05335-57ae-42b8-b0d5-fe7c987134c1)
